@@ -5,12 +5,13 @@ CREATE TABLE checkInEntity (
     trackerId INTEGER NOT NULL,
     timestamp INTEGER AS Instant NOT NULL,
     note TEXT,
+    backdated INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (trackerId) REFERENCES trackerEntity(id)
 );
 
 insert:
-INSERT INTO checkInEntity(trackerId, timestamp, note)
-VALUES (?, ?, ?);
+INSERT INTO checkInEntity(trackerId, timestamp, note, backdated)
+VALUES (?, ?, ?, ?);
 
 selectCheckInsForTracker:
 SELECT *
@@ -24,6 +25,17 @@ FROM checkInEntity
 WHERE trackerId = ?
 ORDER BY timestamp DESC
 LIMIT 1;
+
+selectLastCheckInPerTracker:
+SELECT trackerId, MAX(timestamp) AS timestamp
+FROM checkInEntity
+GROUP BY trackerId;
+
+deleteLastForTracker:
+DELETE FROM checkInEntity
+WHERE id = (
+    SELECT id FROM checkInEntity WHERE trackerId = ? ORDER BY timestamp DESC LIMIT 1
+);
 
 lastInsertRowId:
 SELECT last_insert_rowid();

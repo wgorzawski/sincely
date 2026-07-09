@@ -44,6 +44,7 @@ iosApp/Podfile.lock
 
 # Local tooling config
 .claude/
+notes/
 
 # Logs
 *.log

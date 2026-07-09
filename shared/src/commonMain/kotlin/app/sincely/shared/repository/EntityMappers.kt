@@ -11,6 +11,9 @@ internal fun TrackerEntity.toDomain(): Tracker = Tracker(
     emoji = emoji,
     targetDays = targetDays?.toInt(),
     category = category,
+    customCategoryLabel = customCategoryLabel,
+    reminderEnabled = reminderEnabled,
+    reminderTime = reminderTime,
     createdAt = createdAt,
     archivedAt = archivedAt,
 )
@@ -20,4 +23,5 @@ internal fun CheckInEntity.toDomain(): CheckIn = CheckIn(
     trackerId = trackerId,
     timestamp = timestamp,
     note = note,
+    backdated = backdated,
 )

@@ -1,3 +1,4 @@
+import app.sincely.shared.domain.ReminderTime;
 import app.sincely.shared.domain.TrackerCategory;
 import kotlin.time.Instant;
 
@@ -7,13 +8,30 @@ CREATE TABLE trackerEntity (
     emoji TEXT NOT NULL,
     targetDays INTEGER,
     category TEXT AS TrackerCategory NOT NULL,
+    customCategoryLabel TEXT,
+    reminderEnabled INTEGER AS Boolean NOT NULL DEFAULT 0,
+    reminderTime TEXT AS ReminderTime NOT NULL DEFAULT 'RANO',
     createdAt INTEGER AS Instant NOT NULL,
     archivedAt INTEGER AS Instant
 );
 
 insert:
-INSERT INTO trackerEntity(name, emoji, targetDays, category, createdAt, archivedAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO trackerEntity(name, emoji, targetDays, category, customCategoryLabel, reminderEnabled, reminderTime, createdAt, archivedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE trackerEntity
+SET name = ?, emoji = ?, targetDays = ?, category = ?, customCategoryLabel = ?, reminderEnabled = ?, reminderTime = ?
+WHERE id = ?;
+
+archive:
+UPDATE trackerEntity
+SET archivedAt = ?
+WHERE id = ?;
+
+deleteById:
+DELETE FROM trackerEntity
+WHERE id = ?;
 
 selectAll:
 SELECT *
