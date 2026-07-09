@@ -68,6 +68,28 @@ an `sdk.dir` path). Building `iosApp` requires macOS + Xcode.
 Install the generated APK (`androidApp/build/outputs/apk/debug/`) or open
 the project in Android Studio and run the `androidApp` configuration.
 
+#### Running on the emulator from the command line
+
+Requires the `sincely` AVD to already exist (created once via Android Studio's
+Device Manager or `avdmanager`) and `ANDROID_HOME`/`ANDROID_SDK_ROOT` to be set.
+
+```bash
+# builds, installs, and launches the app; starts the 'sincely' emulator
+# first if none is running yet (waits for it to finish booting) — this is
+# the only command needed after a fresh reboot
+./gradlew runOnEmulator
+
+# only starts the 'sincely' emulator if no device/emulator is connected,
+# without building/installing anything
+./gradlew startEmulatorIfNeeded
+
+# debug APK only, no install/launch (see path printed at the end)
+./gradlew buildApk
+```
+
+`runOnEmulator` is idempotent: if a device/emulator is already connected via
+`adb`, it skips starting a new one and just reinstalls + relaunches the app.
+
 ### iOS
 
 `shared.framework` is built automatically on every Xcode build via a script
