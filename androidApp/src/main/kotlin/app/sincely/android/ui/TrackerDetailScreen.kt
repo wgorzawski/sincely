@@ -175,9 +175,9 @@ fun TrackerDetailScreen(viewModel: TrackerListViewModel, trackerId: Long) {
                         onToggle = { viewModel.toggleDetailInterval(trackerId) },
                         showDivider = targetDays != null,
                     )
-                    if (targetDays != null) {
+                    targetDays?.let { days ->
                         IntervalStepperRow(
-                            days = targetDays,
+                            days = days,
                             onIncrement = { viewModel.incrementDetailInterval(trackerId) },
                             onDecrement = { viewModel.decrementDetailInterval(trackerId) },
                         )
@@ -199,7 +199,7 @@ fun TrackerDetailScreen(viewModel: TrackerListViewModel, trackerId: Long) {
                                 )
                                 NotificationPreview(
                                     title = "${tracker.emoji} ${tracker.name}",
-                                    body = AndroidStrings.notifBody(targetDays),
+                                    body = AndroidStrings.notifBody(days),
                                 )
                             }
                         }

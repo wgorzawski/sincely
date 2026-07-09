@@ -7,3 +7,12 @@ plugins {
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.sqldelight) apply false
 }
+
+tasks.register("buildApk") {
+    group = "sincely"
+    description = "Builds the debug APK (shortcut for :androidApp:assembleDebug)"
+    dependsOn(":androidApp:assembleDebug")
+    doLast {
+        println("APK: androidApp/build/outputs/apk/debug/androidApp-debug.apk")
+    }
+}
