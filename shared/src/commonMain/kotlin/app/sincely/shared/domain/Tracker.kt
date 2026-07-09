@@ -1,6 +1,5 @@
 package app.sincely.shared.domain
 
-import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -16,8 +15,15 @@ data class Tracker(
     val emoji: String,
     val targetDays: Int?,
     val category: TrackerCategory,
-    @Serializable(with = InstantIso8601Serializer::class)
+    /** Only meaningful when [category] is [TrackerCategory.CUSTOM]. */
+    val customCategoryLabel: String? = null,
+    val reminderEnabled: Boolean = false,
+    val reminderTime: ReminderTime = ReminderTime.RANO,
+    @Serializable(with = InstantSerializer::class)
     val createdAt: Instant,
-    @Serializable(with = InstantIso8601Serializer::class)
+    @Serializable(with = InstantSerializer::class)
     val archivedAt: Instant? = null,
-)
+) {
+    val categoryLabel: String get() = TrackerCategoryPresentation.label(category, customCategoryLabel)
+    val categoryEmoji: String get() = TrackerCategoryPresentation.emoji(category)
+}

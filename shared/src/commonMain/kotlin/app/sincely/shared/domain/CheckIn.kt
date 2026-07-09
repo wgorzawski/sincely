@@ -1,6 +1,5 @@
 package app.sincely.shared.domain
 
-import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -9,7 +8,9 @@ import kotlin.time.Instant
 data class CheckIn(
     val id: Long,
     val trackerId: Long,
-    @Serializable(with = InstantIso8601Serializer::class)
+    @Serializable(with = InstantSerializer::class)
     val timestamp: Instant,
     val note: String? = null,
+    /** True when logged for a date earlier than "now" (e.g. "wczoraj" / custom date). */
+    val backdated: Boolean = false,
 )
