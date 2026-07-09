@@ -21,24 +21,19 @@ internal val reminderTimeAdapter = object : ColumnAdapter<ReminderTime, String> 
     override fun encode(value: ReminderTime): String = value.name
 }
 
-internal val booleanAdapter = object : ColumnAdapter<Boolean, Long> {
-    override fun decode(databaseValue: Long): Boolean = databaseValue != 0L
-    override fun encode(value: Boolean): Long = if (value) 1L else 0L
-}
-
-/** Wires the generated SQLDelight database with adapters for domain types. */
+/** Wires the generated SQLDelight database with adapters for domain types.
+ *  `Boolean` columns need no adapter here — SQLDelight maps `INTEGER AS Boolean`
+ *  to/from Kotlin `Boolean` on its own. */
 fun createDatabase(driver: SqlDriver): SincelyDatabase =
     SincelyDatabase(
         driver = driver,
         trackerEntityAdapter = TrackerEntity.Adapter(
             categoryAdapter = trackerCategoryAdapter,
-            reminderEnabledAdapter = booleanAdapter,
             reminderTimeAdapter = reminderTimeAdapter,
             createdAtAdapter = instantAdapter,
             archivedAtAdapter = instantAdapter,
         ),
         checkInEntityAdapter = CheckInEntity.Adapter(
             timestampAdapter = instantAdapter,
-            backdatedAdapter = booleanAdapter,
         ),
     )
