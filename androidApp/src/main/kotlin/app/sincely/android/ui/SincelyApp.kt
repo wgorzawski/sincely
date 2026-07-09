@@ -1,5 +1,6 @@
 package app.sincely.android.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,10 @@ import org.koin.androidx.compose.koinViewModel
 fun SincelyApp(viewModel: TrackerListViewModel = koinViewModel()) {
     val isDarkTheme by viewModel.isDarkTheme.collectAsState()
     val screen by viewModel.screen.collectAsState()
+
+    BackHandler(enabled = screen is Screen.Detail) {
+        viewModel.backToList()
+    }
 
     SincelyTheme(darkTheme = isDarkTheme) {
         Box(Modifier.fillMaxSize().background(LocalSincelyColors.current.bg)) {

@@ -7,10 +7,15 @@ tracker's status (`OK` / `WARNING` / `OVERDUE`) is derived relative to its
 expected frequency. Offline-first, no backend — everything lives locally in
 SQLite on the device.
 
-This commit is the skeleton: a complete project structure, build
-configuration, and one working placeholder screen on Android and iOS. See
-[TODO](#todo--deliberately-skipped) at the bottom of this file for the list
-of things intentionally left for later.
+**Android is a complete, working app**: list/detail screens, adding and
+editing trackers, quick check-ins and backdated check-ins with notes,
+archiving/deleting, category filtering, light/dark theme, stats and
+history. **iOS is not there yet** — the shared Kotlin side is fully wired
+(`IosTrackerGateway` exposes everything the Android ViewModel does), but
+the SwiftUI screens themselves are still a placeholder. See
+[TODO](#todo--remaining-work) below, and
+[`docs/CODE_GUIDE.md`](docs/CODE_GUIDE.md) for a full tour of how the code
+is organized and how data flows through it.
 
 ## Stack
 
@@ -45,6 +50,11 @@ All domain logic (statuses, day counting, time formatting) lives exclusively
 in `shared/commonMain`. The UI layers (Compose, SwiftUI) compute nothing —
 they only render state received from the repository. Data flow is
 one-directional: repository (SQLDelight, `Flow`) → ViewModel/gateway → UI.
+
+For a detailed walkthrough of each layer — the domain model, the SQLDelight
+schema, the repository, Koin wiring, every Android screen file, the current
+iOS gap, and a step-by-step recipe for adding a new feature — see
+[`docs/CODE_GUIDE.md`](docs/CODE_GUIDE.md).
 
 ## How to build
 
@@ -110,41 +120,34 @@ Unit tests for the domain logic (`computeStatus`, `daysSince`,
 (via `:shared:allTests`, no emulator/simulator needed), since all the logic
 is pure Kotlin with no platform dependencies.
 
-## TODO — deliberately skipped
+## TODO — remaining work
 
-This is a skeleton (init commit), not a full app. Deliberately
-skipped/simplified items for follow-up commits:
+Android is feature-complete for the current scope (see
+[`docs/CODE_GUIDE.md`](docs/CODE_GUIDE.md) for the full list of what's
+implemented). What's left:
 
-- **Check-in and history screen** — the repository already has `checkIn`,
-  `observeCheckIns`, `lastCheckIn`, but no screen uses them yet. The
-  placeholder screen only adds a hardcoded tracker (proof of the shared → UI
-  flow), it doesn't perform check-ins.
-- **Displaying status (`TrackerStatus`) in the UI** — `computeStatus` and
-  `RelativeTimeFormatter` have tests in `commonMain`, but no screen calls
-  them yet to render a status color/badge.
-- **Add/edit tracker form** — for now just a hardcoded test tracker via a
-  FAB/"+" button.
-- **Tracker archiving** (`archivedAt`) — the field and the `selectAll` query
-  (filters by `archivedAt IS NULL`) already exist, but there's no UI action
-  to archive yet.
+- **iOS screens** — `IosTrackerGateway` already exposes everything the
+  Android ViewModel does (`getTrackerCards`, `getDetail`, `addTracker`,
+  `quickCheckIn`, `checkInWithOptions`, `archiveTracker`, `deleteTracker`,
+  `undoLastCheckIn`, ...) as ready-to-render DTOs. The SwiftUI side does
+  not use any of it yet: `TrackerListView.swift` still calls the old
+  placeholder `gateway.getTrackers()` / `gateway.addSampleTracker()`, which
+  no longer exist on the gateway — this file most likely does not compile
+  against the current `shared` framework. Needed: list/detail/add/check-in
+  SwiftUI screens mirroring the Android ones, plus a matching color palette
+  (`SincelyColors.swift`) and an expanded `IosStrings.swift`.
 - **i18n** — `RelativeTimeStrings` and the UI strings (`AndroidStrings`,
   `IosStrings`) are hardcoded in Polish, but deliberately factored into
   constants so wiring up resources/`Localizable.strings` will be mechanical.
-- **Reactive iOS screen** — `IosTrackerGateway` exposes one-shot (`suspend`)
-  calls instead of `Flow`, because `Flow` doesn't bridge to Swift without
-  extra tooling (SKIE / KMP-NativeCoroutines). The screen refreshes the list
-  manually after adding a tracker instead of observing live database
-  changes.
+- **Real reminder notifications** — reminders currently only have a
+  toggle + an in-UI preview of what the notification would say; nothing is
+  scheduled via WorkManager/`UNUserNotificationCenter` yet.
 - **JSON export/import** — the models already have `@Serializable`, but no
   code actually serializes/writes/reads a file yet.
-- **SQLDelight migrations** — the schema is at version 1, no
-  migration mechanism/test yet (nothing to migrate from yet).
+- **SQLDelight migrations** — the schema is at version 1, no migration
+  mechanism/test yet (nothing to migrate from yet).
 - **App icon** — the `AppIcon.appiconset` (iOS) and adaptive icon (Android)
   are currently a simple vector placeholder, not the final branding.
 - **CI for iOS** — the workflow only builds and tests `shared` +
-  `androidApp` (as required); the Xcode build requires a macOS runner and
-  isn't wired up yet.
-- **Build verification in this environment** — this init commit was
-  generated in an environment without Java/Android SDK installed, so
-  `./gradlew :shared:allTests :androidApp:assembleDebug` was not run locally
-  when creating the commit — worth doing as a first step after cloning.
+  `androidApp`; the Xcode build requires a macOS runner and isn't wired up
+  yet.
