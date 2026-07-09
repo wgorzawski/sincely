@@ -1,127 +1,128 @@
 # Sincely
 
-Sincely to tracker "kiedy ostatnio coś zrobiłem" — podlewanie kwiatów, wymiana
-filtra, backup, cokolwiek co robisz cyklicznie i łatwo zapomnieć kiedy
-ostatnio było zrobione. Rdzeń aplikacji to jedno kliknięcie ("check-in"),
-z którego wyliczany jest status trackera (`OK` / `WARNING` / `OVERDUE`)
-względem oczekiwanej częstotliwości. Offline-first, bez backendu — wszystko
-żyje lokalnie w SQLite na urządzeniu.
+Sincely is a "when did I last do this" tracker — watering plants, replacing a
+filter, doing a backup, anything you do on a recurring basis and easily lose
+track of. The core of the app is a single tap ("check-in"), from which a
+tracker's status (`OK` / `WARNING` / `OVERDUE`) is derived relative to its
+expected frequency. Offline-first, no backend — everything lives locally in
+SQLite on the device.
 
-Ten commit to szkielet: kompletna struktura projektu, konfiguracja buildów i
-jeden działający ekran-placeholder na Android i iOS. Zobacz [TODO](#todo---co-świadomie-pominięto)
-na dole tego pliku po listę rzeczy celowo zostawionych na później.
+This commit is the skeleton: a complete project structure, build
+configuration, and one working placeholder screen on Android and iOS. See
+[TODO](#todo--deliberately-skipped) at the bottom of this file for the list
+of things intentionally left for later.
 
 ## Stack
 
-- **Kotlin Multiplatform** (Kotlin 2.3.21, K2) — cała logika domenowa w `commonMain`
-- **SQLDelight 2** — typowane zapytania SQL, `AndroidSqliteDriver` / `NativeSqliteDriver`
-- **kotlinx-datetime** + `kotlin.time.Instant` — obliczanie statusu i formatowanie czasu
-- **Koin** — DI spinające bazę danych i repozytorium
-- **kotlinx.serialization** — modele gotowe pod przyszły eksport/import JSON
+- **Kotlin Multiplatform** (Kotlin 2.3.21, K2) — all domain logic in `commonMain`
+- **SQLDelight 2** — typed SQL queries, `AndroidSqliteDriver` / `NativeSqliteDriver`
+- **kotlinx-datetime** + `kotlin.time.Instant` — status computation and time formatting
+- **Koin** — DI wiring the database and repository together
+- **kotlinx.serialization** — models ready for a future JSON export/import
 - **Android**: Jetpack Compose + Material 3
-- **iOS**: SwiftUI, integracja z `shared` bez CocoaPods (`embedAndSignAppleFrameworkForXcode`)
+- **iOS**: SwiftUI, integration with `shared` without CocoaPods (`embedAndSignAppleFrameworkForXcode`)
 
-## Struktura projektu
+## Project structure
 
 ```
 sincely/
 ├─ shared/               # Kotlin Multiplatform
 │  └─ src/
-│     ├─ commonMain/     # modele domenowe, statusy, SQLDelight, repozytorium, Koin
-│     ├─ commonTest/     # testy jednostkowe logiki domenowej
+│     ├─ commonMain/     # domain models, statuses, SQLDelight, repository, Koin
+│     ├─ commonTest/     # unit tests for domain logic
 │     ├─ androidMain/    # AndroidSqliteDriver, Koin androidContext
-│     └─ iosMain/        # NativeSqliteDriver, fasada dla Swift (IosTrackerGateway)
+│     └─ iosMain/        # NativeSqliteDriver, facade for Swift (IosTrackerGateway)
 ├─ androidApp/           # Jetpack Compose + Material 3, single-activity
-├─ iosApp/               # SwiftUI, projekt Xcode (bez CocoaPods)
+├─ iosApp/               # SwiftUI, Xcode project (no CocoaPods)
 ├─ gradle/libs.versions.toml
 ├─ build.gradle.kts, settings.gradle.kts
 └─ .github/workflows/ci.yml
 ```
 
-### Zasada architektoniczna
+### Architectural principle
 
-Cała logika domenowa (statusy, liczenie dni, formatowanie czasu) żyje
-wyłącznie w `shared/commonMain`. Warstwy UI (Compose, SwiftUI) niczego nie
-liczą — tylko renderują stan, który dostają z repozytorium. Przepływ danych
-jest jednokierunkowy: repository (SQLDelight, `Flow`) → ViewModel/gateway →
-UI.
+All domain logic (statuses, day counting, time formatting) lives exclusively
+in `shared/commonMain`. The UI layers (Compose, SwiftUI) compute nothing —
+they only render state received from the repository. Data flow is
+one-directional: repository (SQLDelight, `Flow`) → ViewModel/gateway → UI.
 
-## Jak zbudować
+## How to build
 
-Wymagania: JDK 17+. Do budowy `androidApp` potrzebny jest Android SDK
-(zmienna `ANDROID_HOME`/`ANDROID_SDK_ROOT` lub plik `local.properties` ze
-ścieżką `sdk.dir`). Do budowy `iosApp` potrzebny jest macOS + Xcode.
+Requirements: JDK 17+. Building `androidApp` requires the Android SDK
+(`ANDROID_HOME`/`ANDROID_SDK_ROOT` env var, or a `local.properties` file with
+an `sdk.dir` path). Building `iosApp` requires macOS + Xcode.
 
 ```bash
-# testy jednostkowe logiki domenowej (shared/commonTest)
+# unit tests for domain logic (shared/commonTest)
 ./gradlew :shared:allTests
 
-# build Androida (APK debug)
+# Android build (debug APK)
 ./gradlew :androidApp:assembleDebug
 
-# oba na raz
+# both at once
 ./gradlew :shared:allTests :androidApp:assembleDebug
 ```
 
 ### Android
 
-Zainstaluj wygenerowany APK (`androidApp/build/outputs/apk/debug/`) lub
-otwórz projekt w Android Studio i uruchom konfigurację `androidApp`.
+Install the generated APK (`androidApp/build/outputs/apk/debug/`) or open
+the project in Android Studio and run the `androidApp` configuration.
 
 ### iOS
 
-`shared.framework` buduje się automatycznie przy każdym buildzie Xcode przez
-skrypt w fazie "Compile Kotlin Framework" (`./gradlew :shared:embedAndSignAppleFrameworkForXcode`),
-więc nie trzeba nic budować ręcznie z linii poleceń wcześniej:
+`shared.framework` is built automatically on every Xcode build via a script
+in the "Compile Kotlin Framework" phase
+(`./gradlew :shared:embedAndSignAppleFrameworkForXcode`), so nothing needs to
+be built manually from the command line beforehand:
 
-1. Otwórz `iosApp/iosApp.xcodeproj` w Xcode.
-2. Wybierz schemat `iosApp` i uruchom na symulatorze.
+1. Open `iosApp/iosApp.xcodeproj` in Xcode.
+2. Select the `iosApp` scheme and run on the simulator.
 
-Projekt celowo nie używa CocoaPods — integracja z `shared` jest "direct"
-(Framework Search Paths + `-framework shared` w `OTHER_LDFLAGS`).
+The project deliberately does not use CocoaPods — integration with `shared`
+is "direct" (Framework Search Paths + `-framework shared` in `OTHER_LDFLAGS`).
 
-## Testy
+## Tests
 
-Testy jednostkowe logiki domenowej (`computeStatus`, `daysSince`,
-`RelativeTimeFormatter`) są w `shared/src/commonTest` i uruchamiają się na
-JVM (przez `:shared:allTests`, bez potrzeby emulatora/symulatora), bo cała
-logika jest czystym Kotlinem bez zależności platformowych.
+Unit tests for the domain logic (`computeStatus`, `daysSince`,
+`RelativeTimeFormatter`) live in `shared/src/commonTest` and run on the JVM
+(via `:shared:allTests`, no emulator/simulator needed), since all the logic
+is pure Kotlin with no platform dependencies.
 
-## TODO — co świadomie pominięto
+## TODO — deliberately skipped
 
-To jest szkielet (init commit), nie pełna aplikacja. Świadomie pominięte /
-uproszczone rzeczy do kolejnych commitów:
+This is a skeleton (init commit), not a full app. Deliberately
+skipped/simplified items for follow-up commits:
 
-- **Ekran check-inu i historii** — repozytorium ma już `checkIn`,
-  `observeCheckIns`, `lastCheckIn`, ale żaden ekran jeszcze z nich nie
-  korzysta. Ekran-placeholder tylko dodaje hardcodowany tracker (dowód
-  przepływu shared → UI), nie robi check-inów.
-- **Wyświetlanie statusu (`TrackerStatus`) w UI** — `computeStatus` i
-  `RelativeTimeFormatter` mają testy w `commonMain`, ale żaden ekran jeszcze
-  ich nie wywołuje do renderowania koloru/badge'a statusu.
-- **Formularz dodawania/edycji trackera** — na razie tylko hardcodowany
-  tracker testowy z FAB/przycisku "+".
-- **Archiwizacja trackera** (`archivedAt`) — pole i zapytanie `selectAll`
-  (filtruje po `archivedAt IS NULL`) już istnieją, brak akcji UI do
-  archiwizowania.
-- **i18n** — `RelativeTimeStrings` i stringi UI (`AndroidStrings`,
-  `IosStrings`) są hardcodowane po polsku, ale wydzielone do stałych celowo,
-  żeby podpięcie resources/`Localizable.strings` było mechaniczne.
-- **Reaktywny ekran iOS** — `IosTrackerGateway` udostępnia jednorazowe
-  (`suspend`) wywołania zamiast `Flow`, bo `Flow` nie mostkuje się do Swift
-  bez dodatkowego tooling (SKIE / KMP-NativeCoroutines). Ekran odświeża listę
-  ręcznie po dodaniu trackera, nie nasłuchuje zmian w bazie na żywo.
-- **Eksport/import JSON** — modele mają już `@Serializable`, ale nie istnieje
-  jeszcze żaden kod, który faktycznie serializuje/zapisuje/wczytuje plik.
-- **Migracje SQLDelight** — schemat jest w wersji 1, brak jeszcze
-  mechanizmu/testu migracji (na razie nie ma czego migrować).
-- **Ikona aplikacji** — `AppIcon.appiconset` (iOS) i adaptive icon (Android)
-  są na razie prostym wektorowym symbolem zastępczym, nie finalnym brandingiem.
-- **CI dla iOS** — workflow buduje i testuje tylko `shared` + `androidApp`
-  (zgodnie z wymaganiem); build Xcode wymaga runnera macOS i nie jest jeszcze
-  spięty.
-- **Weryfikacja builda w tym środowisku** — ten init commit został
-  wygenerowany w środowisku bez zainstalowanej Javy/Android SDK, więc
-  `./gradlew :shared:allTests :androidApp:assembleDebug` nie zostało
-  uruchomione lokalnie przy tworzeniu commitu — warto to zrobić jako pierwszy
-  krok po sklonowaniu.
+- **Check-in and history screen** — the repository already has `checkIn`,
+  `observeCheckIns`, `lastCheckIn`, but no screen uses them yet. The
+  placeholder screen only adds a hardcoded tracker (proof of the shared → UI
+  flow), it doesn't perform check-ins.
+- **Displaying status (`TrackerStatus`) in the UI** — `computeStatus` and
+  `RelativeTimeFormatter` have tests in `commonMain`, but no screen calls
+  them yet to render a status color/badge.
+- **Add/edit tracker form** — for now just a hardcoded test tracker via a
+  FAB/"+" button.
+- **Tracker archiving** (`archivedAt`) — the field and the `selectAll` query
+  (filters by `archivedAt IS NULL`) already exist, but there's no UI action
+  to archive yet.
+- **i18n** — `RelativeTimeStrings` and the UI strings (`AndroidStrings`,
+  `IosStrings`) are hardcoded in Polish, but deliberately factored into
+  constants so wiring up resources/`Localizable.strings` will be mechanical.
+- **Reactive iOS screen** — `IosTrackerGateway` exposes one-shot (`suspend`)
+  calls instead of `Flow`, because `Flow` doesn't bridge to Swift without
+  extra tooling (SKIE / KMP-NativeCoroutines). The screen refreshes the list
+  manually after adding a tracker instead of observing live database
+  changes.
+- **JSON export/import** — the models already have `@Serializable`, but no
+  code actually serializes/writes/reads a file yet.
+- **SQLDelight migrations** — the schema is at version 1, no
+  migration mechanism/test yet (nothing to migrate from yet).
+- **App icon** — the `AppIcon.appiconset` (iOS) and adaptive icon (Android)
+  are currently a simple vector placeholder, not the final branding.
+- **CI for iOS** — the workflow only builds and tests `shared` +
+  `androidApp` (as required); the Xcode build requires a macOS runner and
+  isn't wired up yet.
+- **Build verification in this environment** — this init commit was
+  generated in an environment without Java/Android SDK installed, so
+  `./gradlew :shared:allTests :androidApp:assembleDebug` was not run locally
+  when creating the commit — worth doing as a first step after cloning.
