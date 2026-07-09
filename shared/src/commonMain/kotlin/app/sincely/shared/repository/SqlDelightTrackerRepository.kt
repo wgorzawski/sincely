@@ -116,5 +116,5 @@ class SqlDelightTrackerRepository(
         database.checkInQueries.selectLastCheckInPerTracker()
             .asFlow()
             .mapToList(ioDispatcher)
-            .map { rows -> rows.associate { it.trackerId to it.timestamp } }
+            .map { rows -> rows.mapNotNull { row -> row.timestamp?.let { row.trackerId to it } }.toMap() }
 }

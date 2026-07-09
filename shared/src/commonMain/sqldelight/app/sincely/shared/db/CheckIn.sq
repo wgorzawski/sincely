@@ -1,3 +1,4 @@
+import kotlin.Boolean;
 import kotlin.time.Instant;
 
 CREATE TABLE checkInEntity (

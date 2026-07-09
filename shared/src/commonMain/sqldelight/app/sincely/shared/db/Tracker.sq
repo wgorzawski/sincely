@@ -1,5 +1,6 @@
 import app.sincely.shared.domain.ReminderTime;
 import app.sincely.shared.domain.TrackerCategory;
+import kotlin.Boolean;
 import kotlin.time.Instant;
 
 CREATE TABLE trackerEntity (
