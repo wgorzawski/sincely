@@ -1,0 +1,49 @@
+# Gradle
+.gradle/
+build/
+**/build/
+gradle-app.setting
+
+# Local config
+local.properties
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+.kotlin/
+
+# Android
+*.apk
+*.ap_
+*.aab
+*.dex
+captures/
+
+# Xcode
+iosApp/*.xcodeproj/xcuserdata/
+iosApp/*.xcodeproj/project.xcworkspace/xcuserdata/
+iosApp/*.xcworkspace/xcuserdata/
+xcuserdata/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods (kept out on purpose — this project uses direct framework integration)
+iosApp/Pods/
+iosApp/Podfile.lock
+
+# SQLDelight generated schema cache
+**/.sqldelight/
+
+# macOS
+.DS_Store
+
+# Local tooling config
+.claude/
+
+# Logs
+*.log

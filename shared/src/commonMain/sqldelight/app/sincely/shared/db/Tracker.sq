@@ -1,0 +1,30 @@
+import app.sincely.shared.domain.TrackerCategory;
+import kotlin.time.Instant;
+
+CREATE TABLE trackerEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    emoji TEXT NOT NULL,
+    targetDays INTEGER,
+    category TEXT AS TrackerCategory NOT NULL,
+    createdAt INTEGER AS Instant NOT NULL,
+    archivedAt INTEGER AS Instant
+);
+
+insert:
+INSERT INTO trackerEntity(name, emoji, targetDays, category, createdAt, archivedAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAll:
+SELECT *
+FROM trackerEntity
+WHERE archivedAt IS NULL
+ORDER BY createdAt DESC;
+
+selectById:
+SELECT *
+FROM trackerEntity
+WHERE id = ?;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

@@ -1,0 +1,29 @@
+import kotlin.time.Instant;
+
+CREATE TABLE checkInEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    trackerId INTEGER NOT NULL,
+    timestamp INTEGER AS Instant NOT NULL,
+    note TEXT,
+    FOREIGN KEY (trackerId) REFERENCES trackerEntity(id)
+);
+
+insert:
+INSERT INTO checkInEntity(trackerId, timestamp, note)
+VALUES (?, ?, ?);
+
+selectCheckInsForTracker:
+SELECT *
+FROM checkInEntity
+WHERE trackerId = ?
+ORDER BY timestamp DESC;
+
+lastCheckIn:
+SELECT *
+FROM checkInEntity
+WHERE trackerId = ?
+ORDER BY timestamp DESC
+LIMIT 1;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
