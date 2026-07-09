@@ -17,6 +17,17 @@ the SwiftUI screens themselves are still a placeholder. See
 [`docs/CODE_GUIDE.md`](docs/CODE_GUIDE.md) for a full tour of how the code
 is organized and how data flows through it.
 
+## Screenshots
+
+Android, light and dark theme:
+
+<p>
+  <img src="docs/screenshots/list-dark.png" width="200" alt="Tracker list, dark theme" />
+  <img src="docs/screenshots/list-light.png" width="200" alt="Tracker list, light theme" />
+  <img src="docs/screenshots/detail.png" width="200" alt="Tracker detail with stats" />
+  <img src="docs/screenshots/add-tracker.png" width="200" alt="Add-tracker sheet" />
+</p>
+
 ## Stack
 
 - **Kotlin Multiplatform** (Kotlin 2.3.21, K2) — all domain logic in `commonMain`
