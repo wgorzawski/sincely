@@ -168,15 +168,16 @@ fun TrackerDetailScreen(viewModel: TrackerListViewModel, trackerId: Long) {
                         onPickCategory = { viewModel.pickDetailCategory(trackerId, it) },
                         onCustomLabelChange = { viewModel.updateDetailCustomCategoryLabel(trackerId, it) },
                     )
+                    val targetDays = tracker.targetDays
                     ToggleFieldRow(
                         label = AndroidStrings.INTERVAL_TOGGLE_LABEL_EDIT,
-                        checked = tracker.targetDays != null,
+                        checked = targetDays != null,
                         onToggle = { viewModel.toggleDetailInterval(trackerId) },
-                        showDivider = tracker.targetDays != null,
+                        showDivider = targetDays != null,
                     )
-                    if (tracker.targetDays != null) {
+                    if (targetDays != null) {
                         IntervalStepperRow(
-                            days = tracker.targetDays,
+                            days = targetDays,
                             onIncrement = { viewModel.incrementDetailInterval(trackerId) },
                             onDecrement = { viewModel.decrementDetailInterval(trackerId) },
                         )
@@ -198,7 +199,7 @@ fun TrackerDetailScreen(viewModel: TrackerListViewModel, trackerId: Long) {
                                 )
                                 NotificationPreview(
                                     title = "${tracker.emoji} ${tracker.name}",
-                                    body = AndroidStrings.notifBody(tracker.targetDays),
+                                    body = AndroidStrings.notifBody(targetDays),
                                 )
                             }
                         }
